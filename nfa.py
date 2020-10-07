@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 
-# I *first last* have written all of this project myself, without any
+# I Matthew Boyle have written all of this project myself, without any
 # unauthorized assistance, and have followed the academic honor code.
 
 
