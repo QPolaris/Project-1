@@ -36,6 +36,7 @@ class NFA:
         elif isinstance(r, EpsilonRegex):
             pass # TODO: the epsilon language, base form (Hint: look in regex.py)
         elif isinstance(r, StarRegex):
+            nfa0 = NFA(r.r0)
             pass # TODO: handle derived form star
         elif isinstance(r, SeqRegex):
             pass # TODO: handle derived form juxtaposition/sequencing
@@ -46,9 +47,9 @@ class NFA:
             nfa1 = NFA(r.r1)
             start = State()
             end = State()
-            # TODO: what about self.Q?
+            self.Q = nfa0.Q | nfa1.Q | {start, end}
             self.Sigma = nfa0.Sigma | nfa1.Sigma
-            # TODO: what about self.s?
+            self.s = nfa0.s | nfa1.s | start
             self.F = {end}
             # Explanation: below, min is nice for selecting an arbitrary
             # element; as we maintain as an invariant that self.F is
