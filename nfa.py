@@ -37,7 +37,7 @@ class NFA:
             # TODO: the epsilon language, base form (Hint: look in regex.py)
             start = State()
             self.Q = {start}
-            self.Sigma = set("")
+            self.Sigma = set()
             self.s = start
             self.F = set(start)
             self.delta = set()
@@ -49,7 +49,7 @@ class NFA:
             self.Sigma = nfa0.Sigma
             self.s = start
             self.F = {start}
-            self.delta = nfa0.delta | {(start, "", nfa0.s), (min(nfa0.F), "", start)}
+            self.delta = (nfa0.delta | {(start, "", nfa0.s), (min(nfa0.F), "", start)})
         elif isinstance(r, SeqRegex):
             # TODO: handle derived form juxtaposition/sequencing
             nfa0 = NFA(r.r0)
@@ -58,7 +58,7 @@ class NFA:
             self.Sigma = nfa0.Sigma | nfa1.Sigma
             self.s = nfa0.s
             self.F = nfa1.F
-            self.delta = nfa0.delta | nfa1.delta | {(nfa0.f, "", nfa1.s)}
+            self.delta = (nfa0.delta | nfa1.delta | {(min(nfa0.F), "", nfa1.s)})
         elif isinstance(r, DisjRegex):
             # Note how this is exactly the Disjunction construction
             # we saw in the slides for converting RE -> NFA
@@ -85,7 +85,7 @@ class NFA:
             self.Sigma = set(r.x)
             self.s = start
             self.F = {end}
-            self.delta = {start, r.x, end}
+            self.delta = {(start, r.x, end)}
         else:
             raise "NFA must be constructed from a Regex (or None)."
 
@@ -105,12 +105,26 @@ class NFA:
         
     def epsilonClosure(self, qs):
         """Returns the set of states reachable from those in qs without consuming any characters."""
-        pass # TODO: write epsilon closure (see slides)
+        # TODO: write epsilon closure (see slides)
+        eps = set()
+        for x in qs:
+            for y in self.delta:
+                if y[0] == x and y[1] == "":
+                    eps.add(y[2])
+        while eps != set():
+            return (self.epsilonClosure(eps) | eps)
+        return qs
 
     
     def move(self, qs, x):
         """Returns the set of states reachable from those in qs by consuming character x."""
-        pass # TODO: write move (see slides)
+        # TODO: write move (see slides)
+        eps = set()
+        for y in qs:
+            for z in self.delta:
+                if z[0] == y and z[1] == x:
+                    eps.add(z[2])
+        return eps
 
     
     def NFA_to_DFA(self):
