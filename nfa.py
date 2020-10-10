@@ -34,12 +34,31 @@ class NFA:
             self.F = set()
             self.delta = set()
         elif isinstance(r, EpsilonRegex):
-            pass # TODO: the epsilon language, base form (Hint: look in regex.py)
+            # TODO: the epsilon language, base form (Hint: look in regex.py)
+            start = State()
+            self.Q = {start}
+            self.Sigma = set("")
+            self.s = start
+            self.F = set(start)
+            self.delta = set()
         elif isinstance(r, StarRegex):
+            # TODO: handle derived form star
             nfa0 = NFA(r.r0)
-            pass # TODO: handle derived form star
+            start = State()
+            self.Q = nfa0.Q | {start}
+            self.Sigma = nfa0.Sigma
+            self.s = start
+            self.F = {start}
+            self.delta = nfa0.delta | {(start, "", nfa0.s), (min(nfa0.F), "", start)}
         elif isinstance(r, SeqRegex):
-            pass # TODO: handle derived form juxtaposition/sequencing
+            # TODO: handle derived form juxtaposition/sequencing
+            nfa0 = NFA(r.r0)
+            nfa1 = NFA(r.r1)
+            self.Q = nfa0.Q | nfa1.Q
+            self.Sigma = nfa0.Sigma | nfa1.Sigma
+            self.s = nfa0.s
+            self.F = nfa1.F
+            self.delta = nfa0.delta | nfa1.delta | {(nfa0.f, "", nfa1.s)}
         elif isinstance(r, DisjRegex):
             # Note how this is exactly the Disjunction construction
             # we saw in the slides for converting RE -> NFA
@@ -49,7 +68,7 @@ class NFA:
             end = State()
             self.Q = nfa0.Q | nfa1.Q | {start, end}
             self.Sigma = nfa0.Sigma | nfa1.Sigma
-            self.s = nfa0.s | nfa1.s | start
+            self.s = start
             self.F = {end}
             # Explanation: below, min is nice for selecting an arbitrary
             # element; as we maintain as an invariant that self.F is
@@ -59,7 +78,14 @@ class NFA:
                            (min(nfa0.F), "", end), (min(nfa1.F), "", end)}
                           | nfa0.delta | nfa1.delta)
         elif isinstance(r, CharRegex):
-            pass # TODO: handle base form (Hint: look in regex.py)
+            # TODO: handle base form (Hint: look in regex.py)
+            start = State()
+            end = State()
+            self.Q = {start, end}
+            self.Sigma = set(r.x)
+            self.s = start
+            self.F = {end}
+            self.delta = {start, r.x, end}
         else:
             raise "NFA must be constructed from a Regex (or None)."
 
