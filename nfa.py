@@ -107,13 +107,14 @@ class NFA:
         """Returns the set of states reachable from those in qs without consuming any characters."""
         # TODO: write epsilon closure (see slides)
         eps = set()
-        for x in qs:
-            for y in self.delta:
-                if y[0] == x and y[1] == "":
-                    eps.add(y[2])
-        while eps != set():
-            return (self.epsilonClosure(eps) | eps)
-        return qs
+        while eps != qs:
+            eps = eps | qs
+            qs = eps | qs
+            for x in qs: 
+                for y in self.delta:
+                    if y[0] == x and y[1] == "":
+                        eps.add(y[2])
+        return eps
 
     
     def move(self, qs, x):
@@ -132,10 +133,24 @@ class NFA:
         dfa = NFA()
         dfa.r = self.r
         startset = self.epsilonClosure({self.s})
-        start = State(frozenset(startset))
-        dfa.Q = {start}
+        dfa.Q = frozenset(State(frozenset(startset)))
+        dfa.delta = set()
+        dfa.Sigma = self.Sigma
+        dfa.s = startset
+        marked = set()
         # TODO: Construct dfa from self (using subset algorithm)
-        #       ...
+        for d in dfa.Q:
+            while d not in marked:
+                marked = marked.add(d)
+                for s in dfa.Sigma:
+                    dmv = self.move({d}, s)
+                    dmve = self.epsilonClosure(dmv)
+                    if dmve not in dfa.Q:
+                        dfa.Q = dfa.Q.add(State(frozenset(dmve)))
+                    dfa.delta = dfa.delta | set((d, s, frozenset(dmve)))
+        for d in dfa.Q:
+            if self.F in d:
+                dfa.F = dfa.F | d
         return dfa
 
     
